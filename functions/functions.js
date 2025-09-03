@@ -561,48 +561,451 @@ class NotesManager {
         const note = this.notes.find(n => n.id === parseInt(id));
         if (!note) return;
 
-        // Preparar datos para compartir
-        const shareData = {
-            title: `Nota del ${note.date.split(',')[0]}`,
-            text: note.content,
-            url: window.location.href
+        // Crear modal de opciones de compartir
+        this.showShareModal(note);
+    }
+
+    showShareModal(note) {
+        // Crear modal de compartir
+        const shareModalHTML = `
+            <div id="share-modal" class="share-modal">
+                <div class="modal-overlay"></div>
+                <div class="share-modal-content">
+                    <div class="share-header">
+                        <h3>📤 Compartir Nota</h3>
+                        <button class="btn-close-share">✖️</button>
+                    </div>
+                    <div class="share-body">
+                        <div class="share-preview">
+                            <strong>Vista previa:</strong>
+                            <div class="share-note-preview">
+                                <div class="share-note-date">${note.date}</div>
+                                <div class="share-note-content">${note.content.substring(0, 150)}${note.content.length > 150 ? '...' : ''}</div>
+                            </div>
+                        </div>
+                        <div class="share-options">
+                            <button class="share-option" data-method="whatsapp">
+                                <span class="share-icon">💬</span>
+                                <div>
+                                    <strong>WhatsApp</strong>
+                                    <small>Compartir por WhatsApp</small>
+                                </div>
+                            </button>
+                            <button class="share-option" data-method="email">
+                                <span class="share-icon">📧</span>
+                                <div>
+                                    <strong>Email</strong>
+                                    <small>Enviar por correo electrónico</small>
+                                </div>
+                            </button>
+                            <button class="share-option" data-method="telegram">
+                                <span class="share-icon">✈️</span>
+                                <div>
+                                    <strong>Telegram</strong>
+                                    <small>Compartir en Telegram</small>
+                                </div>
+                            </button>
+                            <button class="share-option" data-method="twitter">
+                                <span class="share-icon">🐦</span>
+                                <div>
+                                    <strong>Twitter/X</strong>
+                                    <small>Compartir en Twitter</small>
+                                </div>
+                            </button>
+                            <button class="share-option" data-method="copy">
+                                <span class="share-icon">📋</span>
+                                <div>
+                                    <strong>Copiar texto</strong>
+                                    <small>Copiar al portapapeles</small>
+                                </div>
+                            </button>
+                            <button class="share-option" data-method="download">
+                                <span class="share-icon">💾</span>
+                                <div>
+                                    <strong>Descargar</strong>
+                                    <small>Guardar como archivo .txt</small>
+                                </div>
+                            </button>
+                            <button class="share-option" data-method="qr">
+                                <span class="share-icon">📱</span>
+                                <div>
+                                    <strong>Código QR</strong>
+                                    <small>Generar código QR</small>
+                                </div>
+                            </button>
+                            <button class="share-option" data-method="native">
+                                <span class="share-icon">🔗</span>
+                                <div>
+                                    <strong>Compartir sistema</strong>
+                                    <small>Usar el sistema nativo</small>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Añadir modal al DOM
+        document.body.insertAdjacentHTML('beforeend', shareModalHTML);
+
+        // Añadir estilos del modal de compartir
+        this.addShareModalStyles();
+
+        // Configurar eventos
+        this.setupShareModalEvents(note);
+
+        // Mostrar modal
+        const shareModal = document.getElementById('share-modal');
+        shareModal.style.display = 'flex';
+        setTimeout(() => shareModal.classList.add('show'), 10);
+    }
+
+    addShareModalStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .share-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10001;
+                display: none;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .share-modal.show {
+                opacity: 1;
+            }
+
+            .share-modal-content {
+                background: white;
+                border-radius: 15px;
+                max-width: 500px;
+                width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                transform: scale(0.8);
+                animation: modalSlideIn 0.3s ease forwards;
+            }
+
+            .share-header {
+                padding: 20px;
+                border-bottom: 2px solid #f0f0f0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+                color: white;
+                border-radius: 13px 13px 0 0;
+            }
+
+            .share-header h3 {
+                margin: 0;
+                font-size: 1.3rem;
+            }
+
+            .btn-close-share {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                color: white;
+                padding: 8px 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .btn-close-share:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+
+            .share-body {
+                padding: 20px;
+            }
+
+            .share-preview {
+                margin-bottom: 25px;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                border-left: 4px solid #4CAF50;
+            }
+
+            .share-note-preview {
+                margin-top: 10px;
+            }
+
+            .share-note-date {
+                font-size: 0.9rem;
+                color: #666;
+                margin-bottom: 8px;
+            }
+
+            .share-note-content {
+                font-family: 'Kalam', cursive;
+                line-height: 1.6;
+                color: #333;
+                background: white;
+                padding: 10px;
+                border-radius: 5px;
+                border: 1px solid #ddd;
+            }
+
+            .share-options {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 10px;
+            }
+
+            .share-option {
+                display: flex;
+                align-items: center;
+                padding: 15px;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                background: white;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: left;
+                gap: 15px;
+            }
+
+            .share-option:hover {
+                border-color: #4CAF50;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+            }
+
+            .share-icon {
+                font-size: 1.5rem;
+                min-width: 30px;
+            }
+
+            .share-option div {
+                flex: 1;
+            }
+
+            .share-option strong {
+                display: block;
+                color: #333;
+                font-size: 1rem;
+                margin-bottom: 2px;
+            }
+
+            .share-option small {
+                color: #666;
+                font-size: 0.85rem;
+            }
+
+            @media (max-width: 768px) {
+                .share-options {
+                    grid-template-columns: 1fr;
+                }
+                
+                .share-modal-content {
+                    width: 95%;
+                    margin: 20px;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    setupShareModalEvents(note) {
+        const shareModal = document.getElementById('share-modal');
+        const overlay = shareModal.querySelector('.modal-overlay');
+        const closeBtn = shareModal.querySelector('.btn-close-share');
+        const shareOptions = shareModal.querySelectorAll('.share-option');
+
+        // Cerrar modal
+        const closeShareModal = () => {
+            shareModal.classList.remove('show');
+            setTimeout(() => {
+                shareModal.remove();
+            }, 300);
         };
 
-        // Usar Web Share API si está disponible
-        if (navigator.share) {
-            navigator.share(shareData)
-                .then(() => {
-                    this.showMessage('¡Nota compartida exitosamente!', 'success');
-                })
-                .catch(() => {
-                    this.fallbackShare(note);
-                });
-        } else {
-            this.fallbackShare(note);
+        overlay.addEventListener('click', closeShareModal);
+        closeBtn.addEventListener('click', closeShareModal);
+
+        // Manejar opciones de compartir
+        shareOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const method = option.dataset.method;
+                this.handleShareMethod(method, note);
+                closeShareModal();
+            });
+        });
+    }
+
+    handleShareMethod(method, note) {
+        const formattedText = this.formatNoteForSharing(note);
+        const encodedText = encodeURIComponent(formattedText);
+        const shortText = note.content.length > 100 ?
+            note.content.substring(0, 100) + '...' :
+            note.content;
+
+        switch (method) {
+            case 'whatsapp':
+                window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+                this.showMessage('¡Abriendo WhatsApp para compartir!', 'success');
+                break;
+
+            case 'email':
+                const subject = encodeURIComponent(`Mi nota del ${note.date.split(',')[0]}`);
+                const body = encodeURIComponent(formattedText);
+                window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+                this.showMessage('¡Abriendo cliente de email!', 'success');
+                break;
+
+            case 'telegram':
+                window.open(`https://t.me/share/url?text=${encodedText}`, '_blank');
+                this.showMessage('¡Abriendo Telegram para compartir!', 'success');
+                break;
+
+            case 'twitter':
+                const tweetText = note.content.length > 200 ?
+                    note.content.substring(0, 197) + '...' :
+                    note.content;
+                const tweetEncoded = encodeURIComponent(`📝 Mi nota: ${tweetText}\n\n#MisNotas #NotasUs`);
+                window.open(`https://twitter.com/intent/tweet?text=${tweetEncoded}`, '_blank');
+                this.showMessage('¡Abriendo Twitter para compartir!', 'success');
+                break;
+
+            case 'copy':
+                this.copyToClipboard(formattedText);
+                break;
+
+            case 'download':
+                this.downloadNoteAsFile(note);
+                break;
+
+            case 'qr':
+                this.generateQRCode(formattedText);
+                break;
+
+            case 'native':
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Mi nota del ${note.date.split(',')[0]}`,
+                        text: formattedText
+                    }).then(() => {
+                        this.showMessage('¡Nota compartida exitosamente!', 'success');
+                    }).catch(() => {
+                        this.showMessage('Cancelado por el usuario', 'warning');
+                    });
+                } else {
+                    this.showMessage('Función de compartir no disponible en este navegador', 'warning');
+                }
+                break;
         }
     }
 
-    fallbackShare(note) {
-        // Crear un texto formateado para compartir
-        const shareText = `📝 Mi Nota (${note.date}):\n\n${note.content}\n\n---\nCreado con Notas Us`;
+    formatNoteForSharing(note) {
+        return `📝 MI NOTA
+📅 Fecha: ${note.date}
+📊 ${note.content.split(/\s+/).length} palabras, ${note.content.length} caracteres
 
-        // Copiar al portapapeles
-        navigator.clipboard.writeText(shareText).then(() => {
-            this.showMessage('¡Nota copiada al portapapeles para compartir!', 'success');
+✍️ CONTENIDO:
+${note.content}
+
+---
+💫 Creado con Notas Us`;
+    }
+
+    copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            this.showMessage('¡Nota copiada al portapapeles!', 'success');
         }).catch(() => {
-            // Si no funciona el portapapeles, crear un área de texto temporal
+            // Fallback para navegadores que no soportan clipboard API
             const textArea = document.createElement('textarea');
-            textArea.value = shareText;
+            textArea.value = text;
             document.body.appendChild(textArea);
             textArea.select();
             try {
                 document.execCommand('copy');
-                this.showMessage('¡Nota copiada al portapapeles para compartir!', 'success');
+                this.showMessage('¡Nota copiada al portapapeles!', 'success');
             } catch (err) {
-                this.showMessage('Error al preparar la nota para compartir', 'error');
+                this.showMessage('Error al copiar la nota', 'error');
             }
             document.body.removeChild(textArea);
         });
+    }
+
+    downloadNoteAsFile(note) {
+        const content = this.formatNoteForSharing(note);
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        // Crear nombre de archivo seguro
+        const safeDate = note.date.replace(/[:/,\s]/g, '-');
+        const fileName = `Nota-${safeDate}.txt`;
+
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.showMessage('¡Nota descargada como archivo!', 'success');
+    }
+
+    generateQRCode(text) {
+        // Crear modal para mostrar QR
+        const qrModalHTML = `
+            <div id="qr-modal" class="note-modal">
+                <div class="modal-overlay"></div>
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2>📱 Código QR de tu Nota</h2>
+                        <button class="btn-modal-close">✖️</button>
+                    </div>
+                    <div class="modal-body" style="text-align: center;">
+                        <p>Escaneá este código QR para compartir tu nota:</p>
+                        <div id="qr-container" style="margin: 20px 0; padding: 20px; background: white; border-radius: 10px;">
+                            <div style="width: 200px; height: 200px; margin: 0 auto; background: #f0f0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                                📱
+                            </div>
+                        </div>
+                        <p style="color: #666; font-size: 0.9rem;">
+                            Nota: Para generar un código QR real, necesitarías una librería externa como QRCode.js
+                        </p>
+                        <button class="btn-copy-qr-text" style="margin-top: 15px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            📋 Copiar texto de la nota
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', qrModalHTML);
+        const qrModal = document.getElementById('qr-modal');
+
+        // Mostrar modal
+        qrModal.style.display = 'flex';
+        setTimeout(() => qrModal.classList.add('show'), 10);
+
+        // Eventos del modal QR
+        const closeQR = () => {
+            qrModal.classList.remove('show');
+            setTimeout(() => qrModal.remove(), 300);
+        };
+
+        qrModal.querySelector('.modal-overlay').addEventListener('click', closeQR);
+        qrModal.querySelector('.btn-modal-close').addEventListener('click', closeQR);
+        qrModal.querySelector('.btn-copy-qr-text').addEventListener('click', () => {
+            this.copyToClipboard(text);
+            closeQR();
+        });
+
+        this.showMessage('¡Código QR generado! (Demo)', 'success');
     }
 
     formatNoteContent(content) {

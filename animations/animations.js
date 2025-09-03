@@ -688,7 +688,7 @@ class AnimationManager {
             particle.style.top = y + 'px';
             particle.style.width = '4px';
             particle.style.height = '4px';
-            particle.style.backgroundColor = '#4a90e2';
+            particle.style.backgroundColor = '#dbac85ff';
             particle.style.borderRadius = '50%';
             particle.style.pointerEvents = 'none';
             particle.style.zIndex = '9999';

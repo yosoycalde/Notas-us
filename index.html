@@ -16,7 +16,7 @@
             <nav>
                 <ul class="list-1">
                     <li class="crear-nota-1"><a href="#crate-nota">Crear Nota</a></li>
-                    <li class="mis-notas-1"><a href="#">Mis notas</a></li>
+                    <li class="mis-notas-1"><a href="#my-notes">Mis notas</a></li>
                     <li class="compartir-notas"><a href="#">Compartir Notas</a></li>
                     <li class="cuenta-us-1"><a href="#">Cuenta Us</a></li>
                 </ul>
@@ -32,14 +32,21 @@
     <div class="create-note" id="crate-nota">
         <h1>Crear Nota:</h1>
         <textarea
-            placeholder="Escribe tu nota aquí... El cuaderno se expandirá automáticamente cuando escribas más contenido."
+            placeholder="Escribe tu nota aquí... El cuaderno se expandirá automáticamente cuando escribas más contenido. Usa Ctrl+Enter para añadir rápidamente."
             class="enter" id="not" rows="25"></textarea>
         <br><br>
         <button id="sub" class="btn success"><i class="fas fa-check-circle"></i>Añadir Nota</button>
     </div>
     <div id="my-notes">
         <h1 class="inf-mis-notas">Mis notas:</h1>
+        <div class="no-notes">
+            <p>No tienes notas guardadas aún. ¡Crea tu primera nota!</p>
+        </div>
     </div>
+
+    <!-- Scripts -->
+    <script src="functions/functions.js"></script>
+    <script src="animations/animations.js"></script>
 </body>
 
 </html>

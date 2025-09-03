@@ -1,7 +1,5 @@
-/* Estilos adicionales para mejor UX móvil */
 * {
     -webkit-tap-highlight-color: transparent;
-    /* Elimina el highlight azul en iOS */
 }
 
 input,
@@ -12,7 +10,6 @@ button {
     appearance: none;
 }
 
-/* Prevenir zoom en inputs en iOS */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -21,7 +18,6 @@ select {
     font-size: 16px;
 }
 
-/* Smooth scrolling para toda la página */
 html {
     scroll-behavior: smooth;
 }
@@ -132,10 +128,8 @@ nav {
     display: inline-flex;
 }
 
-/* Importar fuente de letra a mano desde Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
 
-/* Estilo del input como hoja de cuaderno */
 .enter {
     width: 95%;
     max-width: 1000px;
@@ -178,7 +172,6 @@ nav {
     box-shadow: 0 2px 15px rgba(74, 144, 226, 0.2);
 }
 
-/* Margen izquierdo simulado */
 .enter::before {
     content: '';
     position: absolute;
@@ -216,7 +209,6 @@ nav {
     position: relative;
 }
 
-/* Estilos para la sección de notas */
 #my-notes {
     padding: 20px;
     max-width: 1200px;
@@ -245,7 +237,6 @@ nav {
     font-style: italic;
 }
 
-/* Grid de notas */
 .notes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -253,7 +244,6 @@ nav {
     margin-top: 20px;
 }
 
-/* Tarjeta individual de nota */
 .note-card {
     background: linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%);
     border: 2px solid #ddd;
@@ -272,7 +262,6 @@ nav {
     border-left-color: #4a90e2;
 }
 
-/* Cabecera de la nota */
 .note-header {
     display: flex;
     justify-content: space-between;
@@ -315,7 +304,6 @@ nav {
     transform: scale(1.1);
 }
 
-/* Contenido de la nota */
 .note-content {
     font-family: 'Kalam', cursive, 'Comic Sans MS', sans-serif;
     line-height: 1.6;
@@ -331,7 +319,6 @@ nav {
     white-space: pre-line;
 }
 
-/* Scrollbar personalizado para el contenido de las notas */
 .note-content::-webkit-scrollbar {
     width: 6px;
 }
@@ -350,7 +337,6 @@ nav {
     background: #a8a8a8;
 }
 
-/* Mensajes de notificación */
 .notification-message {
     position: fixed;
     top: 100px;
@@ -385,7 +371,6 @@ nav {
     background-color: #f44336;
 }
 
-/* Animación para las tarjetas de nota */
 @keyframes slideInUp {
     from {
         opacity: 0;
@@ -402,7 +387,6 @@ nav {
     animation: slideInUp 0.5s ease forwards;
 }
 
-/* Mejoras en el botón */
 #sub {
     transition: all 0.3s ease;
     font-size: 16px;
@@ -420,12 +404,10 @@ nav {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Efecto de escritura en tiempo real */
 .enter {
     transition: height 0.1s ease;
 }
 
-/* Indicador de contador de caracteres (opcional) */
 .char-counter {
     text-align: right;
     font-size: 0.9rem;
@@ -434,7 +416,6 @@ nav {
     font-family: Georgia, serif;
 }
 
-/* Mejora el contraste en el modo oscuro */
 @media (prefers-color-scheme: dark) {
     .note-card {
         background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
@@ -451,13 +432,11 @@ nav {
     }
 }
 
-/* Responsive design para móviles */
 @media (max-width: 768px) {
     body {
         padding-top: 70px;
     }
 
-    /* Header responsive */
     .header {
         flex-direction: column;
         padding: 10px 15px;
@@ -492,7 +471,6 @@ nav {
         right: 15px;
     }
 
-    /* Sección de imagen principal */
     .section-inicio {
         margin-bottom: 20px;
     }
@@ -502,7 +480,6 @@ nav {
         object-fit: cover;
     }
 
-    /* Crear nota responsive */
     .create-note {
         padding: 15px;
     }
@@ -512,12 +489,10 @@ nav {
         margin-bottom: 15px;
     }
 
-    /* Textarea optimizado para móvil */
     .enter {
         width: 100%;
         min-height: 300px;
         font-size: 16px;
-        /* Evita el zoom en iOS */
         line-height: 24px;
         background-size: 100% 24px;
         background: linear-gradient(to bottom,
@@ -533,17 +508,14 @@ nav {
         box-sizing: border-box;
     }
 
-    /* Botón optimizado para móvil */
     #sub {
         width: 100%;
         padding: 16px 20px;
         font-size: 18px;
         margin-bottom: 20px;
         touch-action: manipulation;
-        /* Mejor respuesta táctil */
     }
 
-    /* Sección de notas */
     .notes-grid {
         grid-template-columns: 1fr;
         gap: 15px;
@@ -565,7 +537,6 @@ nav {
         margin-bottom: 20px;
     }
 
-    /* Tarjetas de nota más grandes para móvil */
     .note-header {
         flex-direction: row;
         align-items: flex-start;
@@ -588,7 +559,6 @@ nav {
         font-size: 1.4rem;
         padding: 8px 10px;
         min-width: 44px;
-        /* Área táctil mínima recomendada */
         min-height: 44px;
         display: flex;
         align-items: center;
@@ -601,7 +571,6 @@ nav {
         max-height: 150px;
     }
 
-    /* Notificaciones móviles */
     .notification-message {
         right: 10px;
         left: 10px;
@@ -611,7 +580,6 @@ nav {
         padding: 14px 18px;
     }
 
-    /* Estado vacío optimizado */
     .no-notes {
         padding: 30px 15px;
         margin: 15px 0;
@@ -622,7 +590,6 @@ nav {
     }
 }
 
-/* Responsive para móviles pequeños */
 @media (max-width: 480px) {
     body {
         padding-top: 75px;
@@ -683,10 +650,8 @@ nav {
     }
 }
 
-/* Mejoras de usabilidad táctil */
 @media (hover: none) and (pointer: coarse) {
 
-    /* Detecta dispositivos táctiles */
     .btn-edit:hover,
     .btn-delete:hover,
     .list-1 li a:hover {

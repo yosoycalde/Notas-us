@@ -677,3 +677,72 @@ nav {
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 }
+
+.btn-view {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-view:hover {
+    background-color: #e8f5e8;
+    transform: scale(1.1);
+}
+
+.note-actions {
+    display: flex;
+    gap: 3px;
+}
+
+.btn-edit,
+.btn-delete,
+.btn-view {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-view:hover {
+    background-color: #e8f5e8;
+    transform: scale(1.1);
+}
+
+.btn-edit:hover {
+    background-color: #e3f2fd;
+    transform: scale(1.1);
+}
+
+.btn-delete:hover {
+    background-color: #ffebee;
+    transform: scale(1.1);
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 768px) {
+
+    .btn-edit,
+    .btn-delete,
+    .btn-view {
+        font-size: 1.4rem;
+        padding: 8px 10px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .note-actions {
+        gap: 5px;
+    }
+}

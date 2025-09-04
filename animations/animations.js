@@ -1,6 +1,8 @@
-// Sistema de animaciones profesionales para Notas Us
+// Sistema de animaciones profesionales para Notas Us - VERSIÓN CORREGIDA
 class AnimationManager {
     constructor() {
+        this.isScrolling = false;
+        this.lastScrollTop = 0;
         this.init();
         this.setupIntersectionObserver();
         this.setupScrollAnimations();
@@ -346,7 +348,7 @@ class AnimationManager {
                 100% { transform: rotate(360deg); }
             }
 
-            /* Integración con estilos existentes */
+            /* Integración con estilos existentes - MEJORADO */
             .note-card {
                 will-change: transform, box-shadow;
                 backface-visibility: hidden;
@@ -358,9 +360,11 @@ class AnimationManager {
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
 
+            /* CORRECCIÓN IMPORTANTE: Eliminar transformaciones problemáticas */
             .img-1 {
-                will-change: transform;
-                transform-style: preserve-3d;
+                will-change: auto; /* Cambio de transform a auto */
+                transform: none; /* Eliminar transformación por defecto */
+                position: relative;
             }
 
             /* Estados de focus mejorados */
@@ -391,6 +395,11 @@ class AnimationManager {
                     -webkit-text-fill-color: initial;
                     color: rgb(0, 0, 0);
                 }
+
+                /* DESACTIVAR PARALLAX EN MÓVILES */
+                .img-1 {
+                    transform: none !important;
+                }
             }
 
             /* Reducir movimiento para usuarios que lo prefieren */
@@ -401,6 +410,11 @@ class AnimationManager {
                     animation-duration: 0.01ms !important;
                     animation-iteration-count: 1 !important;
                     transition-duration: 0.01ms !important;
+                }
+                
+                /* DESACTIVAR PARALLAX COMPLETAMENTE */
+                .img-1 {
+                    transform: none !important;
                 }
             }
         `;
@@ -428,11 +442,11 @@ class AnimationManager {
             }, 200 + (index * 100));
         });
 
-        // Animar imagen principal
+        // Animar imagen principal - SIN SCALE-IN problemático
         const mainImage = document.querySelector('.img-1');
         if (mainImage) {
             setTimeout(() => {
-                mainImage.classList.add('scale-in');
+                mainImage.classList.add('fade-in'); // Cambiar de scale-in a fade-in
             }, 300);
         }
 
@@ -468,7 +482,6 @@ class AnimationManager {
             const buttons = document.querySelectorAll('button, .btn');
             buttons.forEach(button => {
                 button.classList.add('button-ripple', 'hover-lift');
-
                 button.addEventListener('click', this.createRippleEffect.bind(this));
             });
         }, 100);
@@ -571,41 +584,78 @@ class AnimationManager {
         }, 100);
     }
 
+    // FUNCIÓN DE SCROLL CORREGIDA - Esta era la causa principal del problema
     setupScrollAnimations() {
         let ticking = false;
+        const isMobile = window.innerWidth <= 768;
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Si es móvil o el usuario prefiere movimiento reducido, no aplicar parallax
+        if (isMobile || prefersReducedMotion) {
+            return;
+        }
 
         const updateScrollAnimations = () => {
             const scrolled = window.pageYOffset;
-            const rate = scrolled * -0.5;
+            const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
 
-            // Parallax para la imagen principal
-            const mainImage = document.querySelector('.img-1');
-            if (mainImage) {
-                mainImage.style.transform = `translateY(${rate}px)`;
+            // Limitar el parallax solo cuando hay poco contenido
+            if (documentHeight > window.innerHeight * 3) {
+                // Si hay mucho contenido, desactivar parallax para evitar bugs
+                ticking = false;
+                return;
             }
 
-            // Efecto parallax en el header
+            // Reducir significativamente el efecto parallax
+            const rate = scrolled * -0.1; // Cambio de -0.5 a -0.1
+            const maxTranslate = 50; // Limitar la traducción máxima
+
+            // Parallax para la imagen principal - MEJORADO
+            const mainImage = document.querySelector('.img-1');
+            if (mainImage && Math.abs(rate) < maxTranslate) {
+                // Usar transform3d para mejor performance
+                mainImage.style.transform = `translate3d(0, ${rate}px, 0)`;
+            }
+
+            // Efecto parallax en el header - SIMPLIFICADO
             const header = document.querySelector('#main-header');
-            if (header && scrolled > 100) {
-                header.style.backgroundColor = 'rgba(245, 222, 179, 0.95)';
-                header.style.backdropFilter = 'blur(10px)';
-            } else if (header) {
-                header.style.backgroundColor = 'bisque';
-                header.style.backdropFilter = 'none';
+            if (header) {
+                if (scrolled > 50) {
+                    header.style.backgroundColor = 'rgba(245, 222, 179, 0.95)';
+                    header.style.backdropFilter = 'blur(10px)';
+                } else {
+                    header.style.backgroundColor = 'bisque';
+                    header.style.backdropFilter = 'none';
+                }
             }
 
             ticking = false;
         };
 
+        // Throttling más agresivo para evitar lag
+        let scrollTimeout;
         window.addEventListener('scroll', () => {
             if (!ticking) {
-                requestAnimationFrame(updateScrollAnimations);
+                // Usar setTimeout en lugar de requestAnimationFrame para menos frecuencia
+                scrollTimeout = setTimeout(updateScrollAnimations, 16); // ~60fps
                 ticking = true;
+            }
+        }, { passive: true });
+
+        // Limpiar timeout al cambiar de página
+        window.addEventListener('beforeunload', () => {
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
             }
         });
     }
 
     setupTypingAnimations() {
+        // Solo ejecutar si no es móvil
+        if (window.innerWidth <= 768) {
+            return;
+        }
+
         setTimeout(() => {
             const typewriterElements = document.querySelectorAll('.typewriter');
 
@@ -630,6 +680,11 @@ class AnimationManager {
         const header = document.querySelector('.header');
         if (!header) return;
 
+        // Solo en desktop
+        if (window.innerWidth <= 768) {
+            return;
+        }
+
         // Crear container para partículas de fondo
         const particleContainer = document.createElement('div');
         particleContainer.style.position = 'absolute';
@@ -644,34 +699,45 @@ class AnimationManager {
         header.style.position = 'relative';
         header.appendChild(particleContainer);
 
-        // Crear partículas flotantes
+        // Crear partículas flotantes (menos cantidad)
         this.createHeaderParticles(particleContainer);
     }
 
     createHeaderParticles(container) {
-        const particleCount = 15;
+        const particleCount = 8; // Reducir de 15 a 8
 
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
             particle.style.position = 'absolute';
-            particle.style.width = Math.random() * 4 + 2 + 'px';
+            particle.style.width = Math.random() * 3 + 1 + 'px'; // Partículas más pequeñas
             particle.style.height = particle.style.width;
-            particle.style.backgroundColor = `rgba(255, 255, 255, ${Math.random() * 0.3 + 0.1})`;
+            particle.style.backgroundColor = `rgba(255, 255, 255, ${Math.random() * 0.2 + 0.05})`;
             particle.style.borderRadius = '50%';
             particle.style.left = Math.random() * 100 + '%';
             particle.style.top = Math.random() * 100 + '%';
 
-            const duration = Math.random() * 10 + 10;
+            const duration = Math.random() * 15 + 15; // Animaciones más lentas
             particle.style.animation = `float ${duration}s ease-in-out infinite`;
-            particle.style.animationDelay = Math.random() * 5 + 's';
+            particle.style.animationDelay = Math.random() * 10 + 's';
 
             container.appendChild(particle);
         }
     }
 
     setupParticleEffect() {
-        // Efecto de partículas al hacer clic en cualquier lugar
+        // Solo en desktop y con throttling
+        if (window.innerWidth <= 768) {
+            return;
+        }
+
+        let lastClickTime = 0;
         document.addEventListener('click', (e) => {
+            const now = Date.now();
+            if (now - lastClickTime < 500) { // Throttle de 500ms
+                return;
+            }
+            lastClickTime = now;
+
             if (e.target.tagName !== 'BUTTON' && !e.target.classList.contains('btn-edit') && !e.target.classList.contains('btn-delete')) {
                 this.createClickParticles(e.clientX, e.clientY);
             }
@@ -679,22 +745,22 @@ class AnimationManager {
     }
 
     createClickParticles(x, y) {
-        const particleCount = 6;
+        const particleCount = 4; // Reducir de 6 a 4
 
         for (let i = 0; i < particleCount; i++) {
             const particle = document.createElement('div');
             particle.style.position = 'fixed';
             particle.style.left = x + 'px';
             particle.style.top = y + 'px';
-            particle.style.width = '4px';
-            particle.style.height = '4px';
+            particle.style.width = '3px'; // Más pequeñas
+            particle.style.height = '3px';
             particle.style.backgroundColor = '#dbac85ff';
             particle.style.borderRadius = '50%';
             particle.style.pointerEvents = 'none';
             particle.style.zIndex = '9999';
 
             const angle = (i / particleCount) * 2 * Math.PI;
-            const velocity = 50;
+            const velocity = 30; // Reducir velocidad
             const vx = Math.cos(angle) * velocity;
             const vy = Math.sin(angle) * velocity;
 
@@ -705,9 +771,9 @@ class AnimationManager {
             let posY = y;
 
             const animate = () => {
-                opacity -= 0.02;
-                posX += vx * 0.02;
-                posY += vy * 0.02;
+                opacity -= 0.03; // Más rápida desaparición
+                posX += vx * 0.015; // Movimiento más lento
+                posY += vy * 0.015;
 
                 particle.style.left = posX + 'px';
                 particle.style.top = posY + 'px';
@@ -755,6 +821,26 @@ class AnimationManager {
         element.classList.remove('skeleton');
         element.innerHTML = originalContent;
     }
+
+    // MÉTODO NUEVO: Desactivar animaciones problemáticas
+    disableProblematicAnimations() {
+        const mainImage = document.querySelector('.img-1');
+        if (mainImage) {
+            mainImage.style.transform = 'none';
+            mainImage.style.willChange = 'auto';
+        }
+    }
+
+    // MÉTODO NUEVO: Reactivar animaciones cuando sea seguro
+    enableSafeAnimations() {
+        // Solo reactivar si no hay mucho contenido
+        const documentHeight = document.documentElement.scrollHeight;
+        const viewportHeight = window.innerHeight;
+
+        if (documentHeight > viewportHeight * 3) {
+            this.disableProblematicAnimations();
+        }
+    }
 }
 
 // Instanciar el sistema de animaciones cuando el DOM esté listo
@@ -764,6 +850,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Hacer disponible globalmente
     window.animationManager = animationManager;
+
+    // NUEVO: Monitorear cambios en el contenido para ajustar animaciones
+    const contentObserver = new MutationObserver(() => {
+        setTimeout(() => {
+            animationManager.enableSafeAnimations();
+        }, 100);
+    });
+
+    const notesContainer = document.getElementById('my-notes');
+    if (notesContainer) {
+        contentObserver.observe(notesContainer, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
+    }
 
     // Integración con el sistema de notas existente
     if (window.notesManager) {
@@ -777,6 +879,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Animar las notas después de mostrarlas
             setTimeout(() => {
                 animationManager.applyHoverEffectsToNotes();
+                animationManager.enableSafeAnimations(); // Verificar si es seguro animar
             }, 100);
         };
 
@@ -792,4 +895,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
     }
+
+    // NUEVO: Limpiar recursos al salir de la página
+    window.addEventListener('beforeunload', () => {
+        // Detener todas las animaciones activas
+        const animatedElements = document.querySelectorAll('*[style*="animation"], *[style*="transform"]');
+        animatedElements.forEach(el => {
+            el.style.animation = 'none';
+            el.style.transform = 'none';
+        });
+    });
 });
